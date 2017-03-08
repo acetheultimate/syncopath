@@ -33,9 +33,9 @@ def devices_print(print_style=0):
 def auth_check(n, print_=False):
     """Checks if device connected has authorized PC to use adb
 
-    :param n: index of device in printed list through device_print method
-    :param print_: if print_ required along with authentication check
-    :return: tuple with values (status, device_name)
+    :param n: Index of device in printed list through device_print method
+    :param print_: If print_ required along with authentication check
+    :return: Tuple with values (status, device_name)
     """
     numerated_device_list = devices_print(1)
     unauthorized_arr = []
@@ -57,10 +57,11 @@ def auth_check(n, print_=False):
 
 def list_dir(target_device, parent, device_type='0'):
     """List all files (numerated) in the given directory of given device and returns list
-    :param target_device: name of the device which helps selecting exact device out of multiple connected
-    :param parent: directory which is to be traversed
-    :param device_type: defines type of device to select directory traversing commands accordingly
-    :return: list of files/folders in 'parent' directory of 'target_device'
+
+    :param target_device: Name of the device which helps selecting exact device out of multiple connected
+    :param parent: Directory which is to be traversed
+    :param device_type: Defines type of device to select directory traversing commands accordingly
+    :return: List of files/folders in 'parent' directory of 'target_device'
     """
 
     parent = "/".join(str(e) for e in parent)
@@ -100,6 +101,13 @@ def list_dir(target_device, parent, device_type='0'):
 
 
 def sync_function(device, host_dir=".", device_dir="/"):
+    """Synchronize files from a device to target
+
+    :param device: Name of the device
+    :param host_dir: Path of the directory on computer to be synced with
+    :param device_dir: Path of the directory on device to be synced with
+    :return: Status message after desired operation
+    """
     host_dir = "/".join(str(e) for e in host_dir)
     device_dir = "/".join(str(e) for e in device_dir)
     print("Syncing device's %s with %s of host" % (device_dir, os.path.abspath(host_dir)))
@@ -147,7 +155,7 @@ def sync_function(device, host_dir=".", device_dir="/"):
     if counter == 0:
         print("{:^67}".format("Voila! Everything seems to be in sync ;)"))
         exit()
-    sync_from = input("\n\tPress:\n\t\t1.For Device to PC(Default)\n\t\t2.For PC to Device\n3.Cancel: ") or '1'
+    sync_from = input("\n\tPress:\n\t\t1.For Device to PC(Default)\n\t\t2.For PC to Device\n\t\t3.Cancel: ") or '1'
     sync_what = input("Enter the file indexes separated by comma or 'a'(default) to sync all: ") or 'a'
 
     if sync_from == '1':
@@ -171,7 +179,9 @@ def sync_function(device, host_dir=".", device_dir="/"):
         for i in sync_what:
             print("Copying file %s" % i)
             print(subprocess.check_output(sync_cmd[:-2]+[sync_cmd[-2].replace('@file@', i)]+[sync_cmd[-1]]).decode('utf-8'))
-    print("No files to sync from %s to %s" % ('Device', 'PC') if sync_from == '1' else ('PC', 'Device'))
+        print("\nAll Files have successfully been synced :) ")
+    else:
+        print("\nNo files to sync from %s to %s" % ('Device', 'PC') if sync_from == '1' else ('PC', 'Device'))
 
 
 print("Searching and connecting to adb devices...")
