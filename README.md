@@ -11,13 +11,13 @@ Sync files between PC and Device using ADB or ADB-over-Network.
     **HTTPS:** 
     
      ```       
-      git clone https://yogeshsharma-repos@bitbucket.org/yogeshsharma-repos/syncopath.git
+      ~$ git clone https://yogeshsharma-repos@bitbucket.org/yogeshsharma-repos/syncopath.git
      ```
      
     **SSH**:
     
     ```       
-      git clone git@bitbucket.org:yogeshsharma-repos/syncopath.git
+     ~$ git clone git@bitbucket.org:yogeshsharma-repos/syncopath.git
     ```   
 
 * Requires **Python 3.5.2+**
