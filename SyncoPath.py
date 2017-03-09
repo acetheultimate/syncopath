@@ -251,11 +251,11 @@ if device_name in config_file.keys():
     dir_arr = []
     for j in ['device_directory', 'host_directory']:
         try:
-            dir_arr.append(config_file[device_name][j])
+            dir_arr.append("/".join(str(e) for e in config_file[device_name][j]))
         except KeyError:
             dir_arr.append('')
-    _ = input("Previously synced directory found (%s) for the device %s to sync with %s. Want to sync"
-              " it again?(y)es(default)/(n)o: " % (dir_arr[0], dir_arr[1], device_name)) or 'y'
+    _ = input("Previously synced directory found \"(%s)\" for the device \"%s\" to sync with device \"%s\". Want to"
+              " sync it again?(y)es(default)/(n)o: " % (dir_arr[0], os.path.abspath(dir_arr[1]), device_name)) or 'y'
     if _ == 'y':
         directory = config_file[device_name]['device_directory']
         host_directory = config_file[device_name]['host_directory']
