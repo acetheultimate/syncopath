@@ -1,4 +1,4 @@
-# SyncerNova #
+# SyncoPath #
 
 Sync files between PC and Device using ADB or ADB-over-Network.
 
