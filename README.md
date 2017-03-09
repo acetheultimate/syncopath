@@ -9,9 +9,11 @@ Sync files between PC and Device using ADB or ADB-over-Network.
 * Clone using 
 
     **HTTPS:** 
+    
      ```       
       git clone https://yogeshsharma-repos@bitbucket.org/yogeshsharma-repos/syncopath.git
      ```
+     
     **SSH**:
     
     ```       
