@@ -77,7 +77,8 @@ def list_dir(target_device, parent, device_type='0'):
                                   )
                         )
         # some devices doesn't take flags with ls command
-        if dir_list[0] == (0, "ls:"):
+        # if dir_list[0] == (0, "ls"):
+        if dir_list[0] == (0, "ls: Unknown option '-1'. Aborting."):
             dir_list = list(enumerate(i.strip() for i in subprocess.check_output(['adb',
                                                                                   '-s',
                                                                                   target_device,
@@ -156,6 +157,8 @@ def sync_function(device, host_dir=".", device_dir="/"):
         print("{:^67}".format("Voila! Everything seems to be in sync ;)"))
         exit()
     sync_from = input("\n\tPress:\n\t\t1.For Device to PC(Default)\n\t\t2.For PC to Device\n\t\t3.Cancel: ") or '1'
+    if sync_from == '3':
+        exit()
     sync_what = input("Enter the file indexes separated by comma or 'a'(default) to sync all: ") or 'a'
 
     if sync_from == '1':
