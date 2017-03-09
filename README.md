@@ -22,6 +22,7 @@ Sync files between PC and Device using ADB or ADB-over-Network.
 * Run script using Python3
 
  **Linux**
+
 *    Open terminal and type
 
 ```
@@ -33,9 +34,11 @@ Sync files between PC and Device using ADB or ADB-over-Network.
 ~$ cd directory_containing_SyncoPath
 ~$ python3 SyncoPath.py
 ```
-<br>
+
+
 
  **Windows**
+
 *   Make sure to add python3 path to system variables
 *   Then, open cmd and type
 ```
@@ -44,6 +47,7 @@ Sync files between PC and Device using ADB or ADB-over-Network.
 ```
 
 ### How do I use it? ###
+
 * Turn on **USB debugging** on your device
 
     For Android > v7.0, You can connect your device using **ADB-over-Network** to sync files with your computer both are on same Wi-Fi network.
