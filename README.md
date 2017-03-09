@@ -15,7 +15,7 @@ Sync files between PC and Device using ADB or ADB-over-Network.
      **SSH**:
        
       git clone git@bitbucket.org:yogeshsharma-repos/syncopath.git
-<br>
+      
 
 * Requires **Python 3.5.2+**
 
@@ -51,7 +51,9 @@ Sync files between PC and Device using ADB or ADB-over-Network.
 * Turn on **USB debugging** on your device
 
     For Android > v7.0, You can connect your device using **ADB-over-Network** to sync files with your computer both are on same Wi-Fi network.
+
 * Execution is interactive and self-explanatory
+
 * If you need help, feel free to write. I'll be happy to help :)
 
 ### Hugs or Bugs ###
