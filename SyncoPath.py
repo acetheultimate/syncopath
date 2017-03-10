@@ -170,7 +170,7 @@ def sync_function(device, host_dir=".", device_dir="/"):
             sync_what = sync_what.split(',')
             sync_what = [device_to_host[int(i)] for i in sync_what]
     elif sync_from == '2':
-        sync_cmd = ['adb', '-s', device, 'push', '-p', device_dir+"/@file@", host_dir]
+        sync_cmd = ['adb', '-s', device, 'push', '-p', host_dir+"/@file@", device_dir+"/@file@"]
         if sync_what == 'a':
             sync_what = host_to_device
         else:
@@ -182,7 +182,11 @@ def sync_function(device, host_dir=".", device_dir="/"):
     if sync_what:
         for i in sync_what:
             print("Copying file %s" % i)
-            print(subprocess.check_output(sync_cmd[:-2]+[sync_cmd[-2].replace('@file@', i)]+[sync_cmd[-1]]).decode('utf-8'))
+            print(subprocess.check_output(sync_cmd[:-2]
+                                          + [sync_cmd[-2].replace('@file@', i)]
+                                          + [sync_cmd[-1].replace('@file@', i)]
+                                          ).decode('utf-8')
+                  )
         print("\nAll Files have successfully been synced :) ")
     else:
         print("\nNo files to sync from %s to %s" % ('Device', 'PC') if sync_from == '1' else ('PC', 'Device'))
