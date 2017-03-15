@@ -157,25 +157,43 @@ def sync_function(device, host_dir=".", device_dir="/"):
     if counter == 0:
         print("{:^67}".format("Voila! Everything seems to be in sync ;)"))
         exit()
-    sync_from = input("\n\tPress:\n\t\t1.For Device to PC(Default)\n\t\t2.For PC to Device\n\t\t3.Cancel: ") or '1'
-    if sync_from == '3':
+    sync_from = input("\n\tPress:\n"
+                      "\t\t1.For Device to PC(Default)\n"
+                      "\t\t2.For PC to Device\n"
+                      "\t\t\t***USE WITH CAUTION***\n"
+                      "\t\t\tClone from Source to Target\n"
+                      "\t\t\t\tif not in Source, delete from Target also\n"
+                      "\t\t\t\tif not in Target, copy from Source to target\n"
+                      "\t\t3. Clone Device to PC\n"
+                      "\t\t4. Clone PC to Device\n"
+                      "\t\t5. Cancel: ") or '1'
+    if sync_from == '5':
         exit()
-    sync_what = input("Enter the file indexes separated by comma or 'a'(default) to sync all: ") or 'a'
 
-    if sync_from == '1':
+    # No need to ask for file index while cloning
+    if not (sync_from == '3' or sync_from == '4'):
+        sync_what = input("Enter the file indexes separated by comma or 'a'(default) to sync all: ") or 'a'
+    else:
+        sync_what = 'a'
+
+    # Sync or Clone from Device to PC
+    if sync_from == '1' or sync_from == '3':
         sync_cmd = ['adb', '-s', device, 'pull', '-p', device_dir+"/@file@", host_dir]
-        if sync_what == 'a':
+        # 'a' for all, Clone is 'a' by logic
+        if sync_what == 'a' or sync_from == '3':
             sync_what = device_to_host
         else:
             sync_what = sync_what.split(',')
             sync_what = [device_to_host[int(i)] for i in sync_what]
-    elif sync_from == '2':
+    # Sync or Clone from PC to device
+    elif sync_from == '2' or '4':
         sync_cmd = ['adb', '-s', device, 'push', '-p', host_dir+"/@file@", device_dir+"/@file@"]
-        if sync_what == 'a':
+        if sync_what == 'a' or sync_what == '4':
             sync_what = host_to_device
         else:
             sync_what = sync_what.split(',')
             sync_what = [host_to_device[int(i)] for i in sync_what]
+
     else:
         exit()
     sync_what = [i for i in sync_what if i != '']
@@ -187,9 +205,40 @@ def sync_function(device, host_dir=".", device_dir="/"):
                                           + [sync_cmd[-1].replace('@file@', i)]
                                           ).decode('utf-8')
                   )
-        print("\nAll Files have successfully been synced :) ")
+        print("\nAll Files have successfully been copied :) ")
     else:
-        print("\nNo files to sync from %s to %s" % ('Device', 'PC') if sync_from == '1' else ('PC', 'Device'))
+        _ = ('Device', 'PC') if sync_from == '1' or '3' else ('PC', 'Device')
+        print("\nNo files to Copy from %s to %s" % _)
+    # if Cloning , after done copying, Delete from target if not in source
+    if sync_from == '3' or sync_from == '4':
+        clone_cmd = ''
+        # Cloning from Device to PC
+        if sync_from == '3':
+            clone_tbd_set = host_f_set - device_f_set
+            clone_cmd = ["rm",  '"%s/%s"' % (host_dir, "@file@")]
+
+        # Cloning from PC to Device
+        elif sync_from == '4':
+            clone_tbd_set = device_f_set - host_f_set
+            clone_cmd = ['adb', 'shell', 'rm', '"%s/%s"' % (device_dir, "@file@")]
+        else:
+            exit()
+        if len(clone_tbd_set):
+            print("Deleting Following files from Device")
+            counter = 1
+            for i in clone_tbd_set:
+                print("{:^3}. {:{col_width}.{col_width}}" .format(counter, i, col_width=20), end="\t" if counter % 4 != 0 else "\n", flush=True)
+                counter += 1
+            print()
+
+            clone_proceed = input("Do you want to proceed? (y)es (default) /(n)o: ") or 'y'
+            if clone_proceed == 'y' or clone_proceed == "Y":
+                for i in clone_tbd_set:
+                    print("Deleting ", device_dir + "/" + i)
+                    # print(clone_cmd[:-1] + [clone_cmd[-1].replace("@file@", i)])
+                    print(subprocess.check_output(clone_cmd[:-1] + [clone_cmd[-1].replace("@file@", i)]))
+        else:
+            exit()
 
 
 print("Searching and connecting to adb devices...")
@@ -259,8 +308,8 @@ if device_name in config_file.keys():
             dir_arr.append("/".join(str(e) for e in config_file[device_name][j]))
         except KeyError:
             dir_arr.append('')
-    _ = input("Previously synced directory found \"(%s)\" for the device \"%s\" to sync with device \"%s\". Want to"
-              " sync it again?(y)es(default)/(n)o: " % (dir_arr[0], os.path.abspath(dir_arr[1]), device_name)) or 'y'
+    _ = input("Previously synced directory found \"%s\" for the device \"%s\" to sync with \"%s\".\n"
+              "Want to sync it again?(y)es(default)/(n)o: " % (dir_arr[0], device_name, os.path.abspath(dir_arr[1]))) or 'y'
     if _ == 'y':
         directory = config_file[device_name]['device_directory']
         host_directory = config_file[device_name]['host_directory']
