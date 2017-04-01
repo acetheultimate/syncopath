@@ -78,40 +78,45 @@ def list_dir(target_device, parent, device_type='0', listing_type='a', numerated
     parent = "/".join(str(e) for e in parent)
     dir_list = []
     if device_type == '0':
-        options = ''
-        if listing_type == 'f':
-            options = 'F'
-        elif listing_type == 'd':
-            options = 'd */'
-        dir_iter = subprocess.check_output(['adb',
+        legacy = False
+        dir_list = subprocess.check_output(['adb',
                                             '-s',
                                             target_device,
                                             'shell',
-                                            "cd %s; ls -1%s" % (parent, options)]
+                                            "cd %s; ls -1F" % parent]
                                            ).decode("utf-8").splitlines()
         # Legacy devices don't take flags with ls command
-        if dir_iter[0] == "ls: Unknown option '-1'. Aborting.":
+        if dir_list[0] == "ls: Unknown option '-1'. Aborting.":
+            legacy = True
             print("Listing in Legacy Device Mode: ")
-            dir_iter = subprocess.check_output(['adb',
+            dir_list = subprocess.check_output(['adb',
                                                 '-s',
                                                 target_device,
                                                 'shell',
                                                 "cd %s; ls -F" % parent]
                                                ).decode("utf-8").splitlines()
-        dir_iter = (i.strip() for i in dir_iter if i != '')
-        if listing_type == 'a':
-            dir_list = (i[2:] for i in dir_iter)
-        elif listing_type == 'd':
-            dir_list = (i[2:] for i in dir_iter if i.startswith("d "))
-        elif listing_type == 'f':
-            dir_list = (i[2:] for i in dir_iter if not i.startswith("- "))
+        dir_list = (i.strip() for i in dir_list if i != '' and not(i.startswith(".")))
+        if legacy:
+            if listing_type == 'a':
+                dir_list = (i[2:] for i in dir_list)
+            elif listing_type == 'd':
+                dir_list = (i[2:] for i in dir_list if i.startswith("d "))
+            elif listing_type == 'f':
+                dir_list = (i[2:] for i in dir_list if not i.startswith("- "))
+        else:
+            if listing_type == 'a':
+                dir_list = (i.strip("/") for i in dir_list)
+            elif listing_type == 'd':
+                dir_list = (i.strip("/") for i in dir_list if i.endswith("/"))
+            elif listing_type == 'f':
+                dir_list = (i for i in dir_list if not(i.endswith("/")))
 
     elif device_type == '1':
         dir_list = os.listdir(parent)
         if listing_type == 'f':
-            dir_list = [i for i in dir_list if os.path.isfile(os.path.abspath(os.path.join(parent, i)))]
+            dir_list = (i for i in dir_list if os.path.isfile(os.path.abspath(os.path.join(parent, i))))
         elif listing_type == 'd':
-            dir_list = [i for i in dir_list if os.path.isdir(os.path.abspath(os.path.join(parent, i)))]
+            dir_list = (i for i in dir_list if os.path.isdir(os.path.abspath(os.path.join(parent, i))))
     # return Type of the list
     if numerated:
         dir_list = list(enumerate(dir_list))
@@ -226,7 +231,7 @@ def sync_function(device, host_dir=".", device_dir="/"):
         # Cloning from Device to PC
         if sync_from == '3':
             clone_tbd_set = host_f_set - device_f_set
-            clone_cmd = ["rm", '"%s/%s"' % (host_dir, "@file@")]
+            clone_cmd = ["rm", "%s/%s" % (host_dir, "@file@")]
 
         # Cloning from PC to Device
         elif sync_from == '4':
@@ -248,7 +253,7 @@ def sync_function(device, host_dir=".", device_dir="/"):
                 for i in clone_tbd_set:
                     print("Deleting ", device_dir + "/" + i)
                     # print(clone_cmd[:-1] + [clone_cmd[-1].replace("@file@", i)])
-                    print(subprocess.check_output(clone_cmd[:-1] + [clone_cmd[-1].replace("@file@", i)]))
+                    print(subprocess.check_output(clone_cmd[:-1] + [clone_cmd[-1].replace("@file@", i)]) or 'Deleted')
         else:
             exit()
 
@@ -271,7 +276,7 @@ while devices_print() == '-1':
         device_address = input("Enter address of the device (i.p.a.dd:port_number): ")
         device_add_status = subprocess.check_output(['adb', 'connect', device_address])
         print(device_add_status.decode('utf-8'))
-        more_msg = 'Add more devices?(y)es/(n)o/(r)efresh: '
+        more_msg = 'Add more devices?(y)es/(n)o/(r)efresh: ' or 'n'
     elif add_more == 'r' or add_more == 'R':
         subprocess.call('adb kill-server'.split())
         subprocess.check_output('adb start-server'.split())
@@ -281,7 +286,9 @@ while devices_print() == '-1':
         break
 
 auth_check(0, print_=True)
-which_device = input("Which device?(0 default): ") or '0'
+which_device = input("Which device?(0 default)/(e)xit ") or '0'
+if which_device == 'e':
+    exit()
 which_device = int(which_device)
 
 try_again = True
@@ -289,7 +296,9 @@ auth_var = auth_check(which_device, print_=False)
 while auth_var[0] != 1 or try_again:
     if auth_var[0] == -1:
         print("Please Enter a valid device number.")
-        which_device = input("Which device?(0 default): ") or '0'
+        which_device = input("Which device?(0 default):(e)exit ") or '0'
+        if which_device == 'e':
+            exit()
         which_device = int(which_device)
         try_again = True
     elif auth_var[0] == 0:
@@ -385,4 +394,7 @@ elif where == 'a':
     if not host_directory:
         host_directory = input("Enter the path of the folder you want to sync in host: dir/folder") or exit()
 
-sync_function(device_name, host_directory, directory)
+again_ = 'y'
+while again_ == 'y':
+    sync_function(device_name, host_directory, directory)
+    again_ = input("Want to do something else? (y)es/(n)o -> default") or 'n'
